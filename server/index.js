@@ -57,11 +57,16 @@ httpServer.listen(PORT, () => {
 });
 
 const DBURL = process.env.DB_URL;
+
+console.log("DB URL:", DBURL);
 mongoose
-  .connect(DBURL)
+  .connect(DBURL, {
+    serverSelectionTimeoutMS: 10000,
+    family: 4
+  })
   .then(() => {
     console.log("Mongodb connected");
   })
   .catch((error) => {
-    console.log(error);
+    console.log("MongoDB Error:", error);
   });
