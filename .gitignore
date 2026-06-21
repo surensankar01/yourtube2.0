@@ -1,0 +1,17 @@
+# Node modules
+server/node_modules/
+yourtube/node_modules/
+
+# Environment files
+server/.env
+yourtube/.env.local
+
+# Next build
+yourtube/.next/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
