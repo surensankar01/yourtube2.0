@@ -7,6 +7,9 @@ import {
   History,
   User,
   Download,
+  Video,
+  Star,
+  PhoneCall,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -65,6 +68,24 @@ const Sidebar = () => {
                 <Button variant="ghost" className="w-full justify-start">
                   <Download className="w-5 h-5 mr-3" />
                   Downloads
+                </Button>
+              </Link>
+              <Link href="/watch-together">
+                <Button variant="ghost" className="w-full justify-start">
+                  <Video className="w-5 h-5 mr-3" />
+                  Watch Together
+                </Button>
+              </Link>
+              <Link href="/video-call">
+                <Button variant="ghost" className="w-full justify-start">
+                  <PhoneCall className="w-5 h-5 mr-3" />
+                  Video Call
+                </Button>
+              </Link>
+              <Link href="/premium">
+                <Button variant="ghost" className="w-full justify-start text-yellow-600 dark:text-yellow-500 font-semibold hover:text-yellow-600 hover:bg-yellow-50/50">
+                  <Star className="w-5 h-5 mr-3 fill-yellow-600 dark:fill-yellow-500 text-yellow-600 dark:text-yellow-500" />
+                  Buy Premium
                 </Button>
               </Link>
               {user?.channelname ? (

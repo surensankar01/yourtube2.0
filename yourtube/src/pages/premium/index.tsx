@@ -86,6 +86,38 @@ export default function Premium() {
       };
 
       toast.dismiss(toastId);
+      if (keyId === "rzp_test_key_dummy_123") {
+        const confirmSuccess = window.confirm(
+          `[DEVELOPER MODE] Dummy Razorpay Key Detected (${keyId}).\n\n` +
+          `Would you like to simulate a SUCCESSFUL payment for the ${planType.toUpperCase()} plan?`
+        );
+        if (confirmSuccess) {
+          const verifyingToastId = toast.loading("Simulating payment verification...");
+          try {
+            const verifyRes = await axiosInstance.post("/payment/verify", {
+              userId: user._id,
+              orderId: orderId,
+              paymentId: `pay_dummy_${Math.random().toString(36).substring(7)}`,
+              signature: "mock_signature_success",
+              planType: planType,
+            });
+
+            if (verifyRes.data.success) {
+              toast.success("Payment verified! Subscription activated.", { id: verifyingToastId });
+              login(verifyRes.data.user);
+              router.push("/");
+            } else {
+              toast.error("Payment verification failed.", { id: verifyingToastId });
+            }
+          } catch (error) {
+            console.error("Simulation verification error:", error);
+            toast.error("Error simulating payment verification.", { id: verifyingToastId });
+          }
+        } else {
+          toast.info("Simulation cancelled.");
+        }
+        return;
+      }
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
     } catch (error: any) {

@@ -13,7 +13,11 @@ const DAILY_LIMIT = 1; // Free users: 1 download per day (as per approved spec)
 
 // Check daily download limit
 export const checkLimit = async (req, res) => {
-  const { userId } = req.params;
+  const userId = req.user?._id || req.params.userId;
+
+  if (!userId) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
 
   try {
     const user = await User.findById(userId);
@@ -55,7 +59,7 @@ export const checkLimit = async (req, res) => {
 // Download a video
 export const downloadVideo = async (req, res) => {
   const { videoId } = req.params;
-  const { userId } = req.query; // pass userId in query params for easy GET requests
+  const userId = req.user?._id || req.query.userId;
 
   if (!userId) {
     return res.status(400).json({ message: "User ID is required" });
@@ -164,7 +168,11 @@ export const downloadVideo = async (req, res) => {
 
 // Get download history
 export const getDownloadHistory = async (req, res) => {
-  const { userId } = req.params;
+  const userId = req.user?._id || req.params.userId;
+
+  if (!userId) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
 
   try {
     const downloads = await Download.find({ viewer: userId })

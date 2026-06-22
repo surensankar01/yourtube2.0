@@ -17,6 +17,11 @@ export interface PeerStream {
 export function useWebRTC() {
   const localStreamRef = useRef<MediaStream | null>(null);
   const peersRef = useRef<Record<string, RTCPeerConnection>>({});
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioDestinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+  const micSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const screenSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [peerStreams, setPeerStreams] = useState<PeerStream[]>([]);
   const [isMuted, setIsMuted] = useState(false);
@@ -120,6 +125,75 @@ export function useWebRTC() {
     });
   }, []);
 
+  /** Replace the audio track on all peer connections */
+  const replaceAudioTrack = useCallback((newTrack: MediaStreamTrack) => {
+    Object.values(peersRef.current).forEach((pc) => {
+      const sender = pc
+        .getSenders()
+        .find((s) => s.track?.kind === "audio");
+      if (sender) sender.replaceTrack(newTrack);
+    });
+  }, []);
+
+  /** Mix local microphone and screen share audio if screen audio is present, and return the combined audio track */
+  const getMixedAudioTrack = useCallback((screenStream: MediaStream | null) => {
+    const micTrack = localStreamRef.current?.getAudioTracks()[0];
+    if (!micTrack) return null;
+
+    const screenAudioTrack = screenStream?.getAudioTracks()[0];
+    if (!screenAudioTrack) {
+      // Revert to pure microphone audio
+      return micTrack;
+    }
+
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const ctx = audioContextRef.current;
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+
+      if (!audioDestinationRef.current) {
+        audioDestinationRef.current = ctx.createMediaStreamDestination();
+      }
+      const dest = audioDestinationRef.current;
+
+      if (micSourceRef.current) micSourceRef.current.disconnect();
+      if (screenSourceRef.current) screenSourceRef.current.disconnect();
+
+      const micStream = new MediaStream([micTrack]);
+      micSourceRef.current = ctx.createMediaStreamSource(micStream);
+      micSourceRef.current.connect(dest);
+
+      const screenAudioStream = new MediaStream([screenAudioTrack]);
+      screenSourceRef.current = ctx.createMediaStreamSource(screenAudioStream);
+      screenSourceRef.current.connect(dest);
+
+      return dest.stream.getAudioTracks()[0];
+    } catch (err) {
+      console.error("Failed to mix audio tracks:", err);
+      return micTrack;
+    }
+  }, []);
+
+  const stopAudioMixing = useCallback(() => {
+    if (micSourceRef.current) {
+      micSourceRef.current.disconnect();
+      micSourceRef.current = null;
+    }
+    if (screenSourceRef.current) {
+      screenSourceRef.current.disconnect();
+      screenSourceRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+      audioDestinationRef.current = null;
+    }
+  }, []);
+
   /** Toggle microphone mute */
   const toggleMute = useCallback(() => {
     localStreamRef.current?.getAudioTracks().forEach((track) => {
@@ -161,6 +235,9 @@ export function useWebRTC() {
     removePeer,
     getPeer,
     replaceVideoTrack,
+    replaceAudioTrack,
+    getMixedAudioTrack,
+    stopAudioMixing,
     toggleMute,
     toggleCamera,
     cleanup,

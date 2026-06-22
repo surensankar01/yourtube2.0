@@ -8,7 +8,7 @@ export function useScreenShare() {
     if (!navigator.mediaDevices?.getDisplayMedia) {
       throw new Error("Screen sharing not supported in this browser");
     }
-    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
     setScreenStream(stream);
     return stream;
   }, []);

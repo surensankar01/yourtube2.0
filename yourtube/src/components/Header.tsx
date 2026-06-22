@@ -121,6 +121,12 @@ const Header = () => {
                   <Link href="/premium">Buy Premium Plan</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="hover:bg-muted">
+                  <Link href="/downloads">Downloads</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:bg-muted">
+                  <Link href="/watch-together">Watch Together</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="hover:bg-muted">
                   <Link href="/history">History</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="hover:bg-muted">

@@ -51,7 +51,7 @@ const VideoInfo = ({ video }: any) => {
       // 1. Check download limit
       const limitCheck = await axiosInstance.get(`/download/check-limit/${user._id}`);
       if (limitCheck.data.limitReached) {
-        toast.error("Daily download limit of 3 reached. Upgrade to premium for unlimited downloads!");
+        toast.error(`Daily download limit of ${limitCheck.data.limit} reached. Upgrade to premium for unlimited downloads!`);
         setIsDownloading(false);
         return;
       }
